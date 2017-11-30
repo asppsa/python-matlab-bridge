@@ -76,7 +76,8 @@ MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['pymatbridge',
             'pymatbridge.messenger']
-PACKAGE_DATA = {"pymatbridge": ["matlab/matlabserver.m", "matlab/messenger.*",
+PACKAGE_DATA = {"pymatbridge": ["matlab/jar/*.jar", "matlab/jmessenger.m",
+                                "matlab/matlabserver.m", "matlab/messenger.*",
                                 "matlab/usrprog/*", "matlab/util/*.m",
                                 "matlab/util/json_v0.2.2/LICENSE",
                                 "matlab/util/json_v0.2.2/README.md",

@@ -4,13 +4,25 @@ function matlabserver(socket_address)
 % "exit" command
 
 json_startup
+
+if exist('messenger') == 0
+  messenger = @jmessenger;
+end
+
 messenger('init', socket_address);
 
 c=onCleanup(@()exit);
 
 while(1)
     msg_in = messenger('listen');
-    req = json_load(msg_in);
+
+    try
+      req = json_load(msg_in);
+      req
+    catch
+      ex = lasterror();
+      warning(['JSON error: ', ex.message]);
+    end
 
     switch(req.cmd)
         case {'connect'}

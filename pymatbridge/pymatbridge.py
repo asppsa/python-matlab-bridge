@@ -164,7 +164,7 @@ class _Session(object):
         self.startup_options = startup_options
 
         if socket_addr is None:
-            self.socket_addr = "tcp://127.0.0.1" if self.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
+            self.socket_addr = "tcp://127.0.0.1" #if self.platform == "win32" else "ipc:///tmp/pymatbridge-%s"%str(uuid4())
 
         if self.log:
             startup_options += ' > ./pymatbridge/logs/bashlog_%s.txt' % self.id
@@ -194,19 +194,20 @@ class _Session(object):
         code.extend([
             "matlabserver('%s')" % self.socket_addr
         ])
-        command = '%s %s %s "%s"' % (self.executable, self.startup_options,
-                                     self._execute_flag(), ','.join(code))
-        subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE)
+        command = [self.executable] + self.startup_options + \
+                                     [self._execute_flag(), ' '.join(code)]
+        print(command)
+        self.proc = subprocess.Popen(command, shell=False, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Start server/client session and make the connection
     def start(self):
         # Setup socket
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
-        if self.platform == "win32":
-            rndport = random.randrange(49152, 65536)
-            self.socket_addr = self.socket_addr + ":%s"%rndport
+        #if self.platform == "win32":
+        rndport = random.randrange(49152, 65536)
+        self.socket_addr = self.socket_addr + ":%s"%rndport
 
         # Start the MATLAB server in a new process
         print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
@@ -256,7 +257,13 @@ class _Session(object):
         start_time = time.time()
         while True:
             try:
+                returncode = self.proc.poll()
+                if returncode:
+                    print("Subprocess exited with status %i" % returncode)
+                    return False
+
                 resp = self.socket.recv_string(flags=zmq.NOBLOCK)
+                print(resp)
                 return resp == "connected"
             except zmq.ZMQError:
                 sys.stdout.write('.')

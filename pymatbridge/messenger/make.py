@@ -24,6 +24,7 @@ The license for pexpect is below:
 """
 
 from __future__ import print_function
+import glob
 import os
 import platform
 import sys
@@ -270,12 +271,28 @@ def build_matlab(static=False):
     do_build(make_cmd, 'messenger.%s' % extension)
 
 
+def build_java():
+    """build the messenger JAR for MATLAB/Java
+    """
+    make_cmd = "mvn clean package dependency:copy-dependencies"
+    subprocess.check_output(shlex.split(make_cmd), shell=use_shell)
+
+    if not os.path.exists('jar'):
+        os.mkdir('jar')
+
+    for file in glob.glob('jar/*'):
+        os.remove(file)
+
+    for file in glob.glob('target/dependency/*.jar') + glob.glob('target/*.jar'):
+        shutil.move(file, "jar")
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "target",
-        choices=["matlab", "octave"],
+        choices=["matlab", "octave", "java"],
         type=str.lower,
         help="target to be built")
     parser.add_argument("--static", action="store_true",
@@ -283,6 +300,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.target == "matlab":
         build_matlab(static=args.static)
+    elif args.target == "java":
+        build_java()
     elif args.target == "octave":
         if args.static:
             raise ValueError("static building not yet supported for octave")

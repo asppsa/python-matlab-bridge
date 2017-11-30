@@ -26,6 +26,12 @@ messenger_dir = get_messenger_dir()
 for f in glob.glob("./pymatbridge/messenger/%s/messenger.*" % messenger_dir):
     shutil.copy(f, "./pymatbridge/matlab")
 
+if not os.path.exists("./pymatbridge/matlab/jar"):
+    os.mkdir("./pymatbridge/matlab/jar")
+
+for f in glob.glob("./pymatbridge/messenger/jar/*.jar"):
+    shutil.copy(f, "./pymatbridge/matlab/jar")
+
 try:
     from setuptools import setup
 except ImportError:
